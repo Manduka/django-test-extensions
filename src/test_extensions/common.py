@@ -153,12 +153,39 @@ class Common(TestCase):
     def assert_xml(self, xml, xpath, **kw):
         'Check that a given extent of XML or HTML contains a given XPath, and return its first node'
 
+        if hasattr(xpath, '__call__'):
+            return self.assert_xml_tree(xml, xpath, **kw)
+
         tree = self._xml_to_tree(xml, forgiving=kw.get('forgiving', False))
         nodes = tree.xpath(xpath)
         self.assertTrue(len(nodes) > 0, xpath + ' should match ' + self._xml)
         node = nodes[0]
-        if kw.get('verbose', False):  self.reveal_xml(node)  #  "here have ye been? What have ye seen?"--Morgoth
+        if kw.get('verbose', False):  self.reveal_xml(node)  #  "Where have ye been? What have ye seen?"--Morgoth
         return node
+
+    def assert_xml_tree(self, sample, block, **kw):  #  TODO  less sucktacular name!
+        from lxml.builder import ElementMaker # TODO document we do lxml only !
+        doc = block(ElementMaker())
+        doc_order = -1
+
+        for node in doc.xpath('//*'):
+            nodes = [self._node_to_predicate(a) for a in node.xpath('ancestor-or-self::*')]
+            path = '//' + '/descendant::'.join(nodes)
+            node = self.assert_xml(sample, path, **kw)  #  TODO  check for position by [2] if requested
+            location = len(node.xpath('preceding::*'))
+            self.assertTrue(doc_order <= location, 'Node out of order! ' + path)
+            doc_order = location  # TODO  amalgamate all errors - don't just kack on the first one!
+
+    def _node_to_predicate(self, node):
+        path = node.tag
+
+        for key, value in node.attrib.items():  #  TODO  test these
+            path += '[ contains(@%s, "%s") ]' % key, value # TODO  warn about (then fix) quote escaping bugs
+
+        if node.text:  #  TODO  document only leaf nodes may check for text or attributes
+            path += '[ contains(text(), "%s") ]' % node.text
+
+        return path
 
     def reveal_xml(self, node):
         'Spews an XML node as source, for diagnosis'
