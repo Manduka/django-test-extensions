@@ -180,7 +180,7 @@ class Common(TestCase):
         path = node.tag
 
         for key, value in node.attrib.items():  #  TODO  test these
-            path += '[ contains(@%s, "%s") ]' % key, value # TODO  warn about (then fix) quote escaping bugs
+            path += '[ contains(@%s, "%s") ]' % (key, value) # TODO  warn about (then fix) quote escaping bugs
 
         if node.text:  #  TODO  document only leaf nodes may check for text or attributes
             path += '[ contains(text(), "%s") ]' % node.text
