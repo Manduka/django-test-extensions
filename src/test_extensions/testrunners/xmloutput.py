@@ -70,7 +70,8 @@ class _XmlTextTestResult(unittest.TestResult):
         test._extraAssertions = []
         TestResult.startTest(self, test)
         self.stream.write('<testcase classname="%s' % test.__class__.__name__ + '" name="%s' % test.id().split('.')[-1] + '"')
-        desc = test.shortDescription()
+        desc = (test._testMethodDoc or '').strip()
+        # desc = test.shortDescription()  #  CONSIDER why did this fail?
 
         if desc:
             desc = _cleanHTML(desc)
