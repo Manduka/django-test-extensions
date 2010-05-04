@@ -75,6 +75,7 @@ class _XmlTextTestResult(unittest.TestResult):
 
         if desc:
             desc = _cleanHTML(desc)
+            desc = desc.replace('\n', '&#10;')
             self.stream.write(' desc="%s"' % desc)
 
     def stopTest(self, test):
