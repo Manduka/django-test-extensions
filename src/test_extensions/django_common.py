@@ -160,7 +160,29 @@ class DjangoCommon(Common):
         mails = mail.outbox[ previous_mails : ]
         assert [] == mails, 'the called block should produce no mails'
 
-    def assert_model_changes(self, mod, item, frum, too, lamb):
+    def assert_model_changes(self, mod, lamb, **options):
+        source = open(lamb.func_code.co_filename, 'r').readlines()[lamb.func_code.co_firstlineno - 1]
+        source = source.replace('lambda:', '').strip()
+        model  = str(mod.__class__).replace("'>", '').split('.')[-1]
+
+        for item, (before, after) in options.items():  #  TODO  accumulate all diffs and report them all
+            should = '%s.%s should equal `%s` before your activation line, `%s`' % \
+                      (model, item, before, source)  #  TODO  rename frum too to before after
+
+            self.assertEqual(before, getattr(mod, item, not before), should)
+
+        lamb()
+        mod = mod.__class__.objects.get(pk=mod.pk)
+
+        for item, (before, after) in options.items():  #  TODO  accumulate all diffs and report them all
+            should = '%s.%s should equal `%s` after your activation line, `%s`' % \
+                      (model, item, after, source)
+
+            self.assertEqual(after, getattr(mod, item, not after), should)  #  TODO  allow a single item, not a before-after pair, to indicate a field should NOT change
+
+        return mod  #  TODO  squeak if there's no options, or if the before-afters don't come in pairs
+
+    def assert_model_changes_old(self, mod, item, frum, too, lamb):
         source = open(lamb.func_code.co_filename, 'r').readlines()[lamb.func_code.co_firstlineno - 1]
         source = source.replace('lambda:', '').strip()
         model  = str(mod.__class__).replace("'>", '').split('.')[-1]
