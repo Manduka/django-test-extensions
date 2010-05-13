@@ -199,3 +199,30 @@ class Common(TestCase):
         tree = self._xml_to_tree(xml)
         nodes = tree.xpath(xpath)
         self.assertEqual(0, len(nodes), xpath + ' should not appear in ' + self._xml)
+
+    def convert_xml_to_element_maker(self, thang):
+        'script that coverts XML to its ElementMaker notation'
+
+        from lxml import etree
+        doc = etree.XML(thang)
+        return self._convert_child_nodes(doc)
+
+    def _convert_child_nodes(self, node, depth=0):
+        code = '\n' + ' ' * depth * 2 + 'XML.' + node.tag + '('
+        children = node.xpath('*')
+
+        if node.text and not re.search('^\s*$', node.text):
+            code += repr(node.text)
+            if node.attrib or children:  code += ', '
+
+        if children:
+            child_nodes = [ self._convert_child_nodes(n, depth + 1) for n in children ]
+            code += (',' ).join(child_nodes)
+            if node.attrib:  code += ', '
+
+        if node.attrib:
+            attribs = [ '%s=%r' % (kv) for kv in node.attrib.items() ]
+            code += ', '.join(attribs)
+
+        code += ')'
+        return code
