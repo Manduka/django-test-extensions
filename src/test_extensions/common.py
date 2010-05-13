@@ -165,21 +165,35 @@ class Common(TestCase):
 
     def assert_xml_tree(self, sample, block, **kw):  #  TODO  less sucktacular name!
         from lxml.builder import ElementMaker # TODO document we do lxml only !
-        doc = block(ElementMaker())
+        doc = block(ElementMaker())   #  TODO  or just pass in an element maker
+        path = self._convert_nodes_to_nested_path(doc)
+        self.assert_xml(sample, path, **kw)  #  this checks nesting
+          #  CONSIDER  now detect which parts failed!!!
         doc_order = -1
 
         for node in doc.xpath('//*'):
-            nodes = [self._node_to_predicate(a) for a in node.xpath('ancestor-or-self::*')]
-            path = '//' + '/descendant::'.join(nodes)
-            node = self.assert_xml(sample, path, **kw)  #  TODO  check for position by [2] if requested
-            location = len(node.xpath('preceding::*'))
-            self.assertTrue(doc_order <= location, 'Node out of order! ' + path)
-            doc_order = location  # TODO  amalgamate all errors - don't just kack on the first one!
+            doc_order = self._assert_xml_node(doc_order, kw, node, sample)
+              # TODO  amalgamate all errors - don't just kack on the first one!
+
+    def _assert_xml_node(self, doc_order, kw, node, sample):
+        nodes = [self._node_to_predicate(a) for a in node.xpath('ancestor-or-self::*')]
+        path = '//' + '/descendant::'.join(nodes)
+        node = self.assert_xml(sample, path, **kw)
+        location = len(node.xpath('preceding::*'))
+        self.assertTrue(doc_order <= location, 'Node out of order! ' + path)
+        return location
+
+    def _convert_nodes_to_nested_path(self, node):
+        path = 'descendant-or-self::' + self._node_to_predicate(node)
+        nodes = node.xpath('*')
+        paths = [ '[ ' + self._convert_nodes_to_nested_path(n) + ' ]' for n in nodes ]
+        path += ''.join(paths)
+        return path
 
     def _node_to_predicate(self, node):
         path = node.tag
 
-        for key, value in node.attrib.items():  #  TODO  test these
+        for key, value in node.attrib.items():
             path += '[ contains(@%s, "%s") ]' % (key, value) # TODO  warn about (then fix) quote escaping bugs
 
         if node.text:  #  TODO  document only leaf nodes may check for text or attributes
