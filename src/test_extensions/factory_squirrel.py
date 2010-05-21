@@ -20,79 +20,79 @@ class FactorySquirrel:
 
     def __init__(self):
         self.created = {}
-        self.nuts = '\nsquirrel = FactorySquirrel()\n\n'
+        self.granary = '\nsquirrel = FactorySquirrel()\n\n'
 
-    def bury(self, objects):  #  TODO
-        for o in flatten([objects]):  self.bury_nut(o)
-        return self.nuts
+    def bury(self, objects):  #  TODO  *objects
+        for o in flatten([objects]):  self.bury_one(o)
+        return self.granary
 
-    def bury_nut(self, o):
-        typage = self.fetch_object_type(o)
-        var_name = self.fetch_object_name(o)
-        self.created[var_name] = o
+    def bury_one(self, nut):
+        typage = self.fetch_object_type(nut)
+        var_name = self.fetch_object_name(nut)
+        self.created[var_name] = nut
 
-        for f in o._meta.fields:
+        for f in nut._meta.fields:
             if f.rel:
-                thang = getattr(o, f.name)
+                thang = getattr(nut, f.name)
 
                 if thang:
                     self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
 
-        self.nuts += var_name + ' = squirrel.dig_up(' + typage + ', None'
+        self.granary += var_name + ' = squirrel.dig_up(' + typage + ', None'
 
-        for f in o._meta.fields:
-            thang = getattr(o, f.name)  #  TODO  useful defaults
+        for f in nut._meta.fields:
+            thang = getattr(nut, f.name)  #  TODO  useful defaults
           #  except:#  TODO  more accurate exception type & reporting
 
-            if str(getattr(o, f.name).__class__
+            if str(getattr(nut, f.name).__class__
                    ) in ('<type \'unicode\'>', '<type \'int\'>'):  # TODO now do the other kinds!
-                self.nuts += '                , ' + f.name + '=%r\n' % thang
+                self.granary += '                , ' + f.name + '=%r\n' % thang
             elif f.rel and thang:
                 name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
-                self.nuts += '                , ' + f.name + '=%s\n' % name
+                self.granary += '                , ' + f.name + '=%s\n' % name
 
-        self.nuts += '                )\n'
+        self.granary += '                )\n'
 
-        for ro in o._meta.get_all_related_objects():
+        for ro in nut._meta.get_all_related_objects():
             yo_name = ro.field.name
-            items = ro.model.objects.filter(**{yo_name: o.pk}).all()
+            items = ro.model.objects.filter(**{yo_name: nut.pk}).all()
             self.bury(items)
 
 #  TODO put all in a fixture function
 
-    def pre_create_if_needed(self, o):  #  TODO  fun with system metaphors, and precreate_
-        typage = self.fetch_object_type(o)  #  TODO  merge!
-        var_name = '%s_%s' % (typage.lower(), str(o.pk))
+    def pre_create_if_needed(self, nut):  #  TODO  fun with system metaphors, and precreate_
+        typage = self.fetch_object_type(nut)  #  TODO  merge!
+        var_name = '%s_%s' % (typage.lower(), str(nut.pk))
 
         if not self.created.has_key(var_name):
-            self.bury_nut(o)
+            self.bury_one(nut)
 
-    def fetch_object_type(self, o):
+    def fetch_object_type(self, nut):
         import re
-        path = re.search(r"'(.+)'", str(type(o)))
+        path = re.search(r"'(.+)'", str(type(nut)))
         path = path.group(1).split('.')
         typage = path[-1]
           #  this also slips in the importer, coz we got the variables out
         importer = 'from %s import %s\n' % ('.'.join(path[:-1]), typage)
 
-        if importer not in self.nuts:
-            self.nuts = importer + self.nuts
+        if importer not in self.granary:
+            self.granary = importer + self.granary
 
         return typage
 
-    def fetch_object_name(self, o):
-        typage = self.fetch_object_type(o)
-        return '%s_%s' % (typage.lower(), str(o.pk))
+    def fetch_object_name(self, nut):
+        typage = self.fetch_object_type(nut)
+        return '%s_%s' % (typage.lower(), str(nut.pk))
 
-    def fetch_object_name_too(self, o):  #  TODO  use or lose
+    def fetch_object_name_too(self, nut):  #  TODO  use or lose
         import re
-        path = re.search(r"'(.+)'", str(type(o)))
+        path = re.search(r"'(.+)'", str(type(nut)))
         path = path.group(1).split('.')
         typage = path[-1]
         importer = 'from %s import %s\n' % ('.'.join(path[:-1]), typage)
 
-        if importer not in self.nuts:
-            self.nuts = importer + self.nuts
+        if importer not in self.granary:
+            self.granary = importer + self.granary
 
         return typage
 
@@ -104,10 +104,10 @@ class FactorySquirrel:
         typage.objects.filter(pk=attributes.get(pk_name,-1)).delete()
 
         #try:
-        o = typage.objects.create(**attributes)  #  TODO  don't save to database
+        nut = typage.objects.create(**attributes)  #  TODO  don't save to database
         #except:
          #   return None  #  TODO  better recorvery!
-        return o
+        return nut
 
         #  TODO  the assert_xml_tree system should replace its low
        #    level assert doc strings with a high-level one revealing intent
