@@ -7,8 +7,8 @@ class FactorySquirrel:
 
     The Squirrel will recursively store every model object in that model.
 
-    Copy the source out, remove your fixtures =[] line, and call the squirrel
-    in your setUp():
+    Copy the source out, save it in a file, remove your fixtures =[] line, and call
+    the squirrel in your setUp():
 
         exec 'buried_model.py'
 
@@ -20,9 +20,13 @@ class FactorySquirrel:
 
     def __init__(self):
         self.created = {}
-        self.granary = '\nsquirrel = FactorySquirrel()\n\n'
 
-    def bury(self, *objects):
+        self.granary = ( 'from test_extensions.factory_squirrel import FactorySquirrel\n' +
+                         '\n' +
+                         'squirrel = FactorySquirrel()\n' +
+                         '\n' )
+
+    def bury(self, *objects):  #  TODO  bury -> store
         for o in flatten(objects):  self.bury_one(o)
         return self.granary
 
@@ -31,12 +35,7 @@ class FactorySquirrel:
         var_name = self.fetch_object_name(nut)
         self.created[var_name] = nut
 
-        for f in nut._meta.fields:
-            if f.rel:
-                thang = getattr(nut, f.name)
-
-                if thang:
-                    self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
+        self._pre_create_necessary_nuts(nut)
 
         self.granary += var_name + ' = squirrel.dig_up(' + typage + ', None'
 
@@ -44,12 +43,14 @@ class FactorySquirrel:
             thang = getattr(nut, f.name)  #  TODO  useful defaults
           #  except:#  TODO  more accurate exception type & reporting
 
-            if str(getattr(nut, f.name).__class__
+            if f.rel:
+                if thang:
+                    name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
+                    self.granary += '                , ' + f.name + '=%s\n' % name
+            elif str(thang.__class__
                    ) in ('<type \'unicode\'>', '<type \'int\'>'):  # TODO now do the other kinds!
                 self.granary += '                , ' + f.name + '=%r\n' % thang
-            elif f.rel and thang:
-                name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
-                self.granary += '                , ' + f.name + '=%s\n' % name
+
 
         self.granary += '                )\n'
 
@@ -59,6 +60,15 @@ class FactorySquirrel:
             self.bury(items)
 
 #  TODO put all in a fixture function
+
+    def _pre_create_necessary_nuts(self, nut):
+        for f in nut._meta.fields:
+            if f.rel:
+                thang = getattr(nut, f.name)
+
+                if thang:
+                    self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
+
 
     def pre_create_if_needed(self, nut):  #  TODO  fun with system metaphors, and precreate_
         typage = self.fetch_object_type(nut)  #  TODO  merge!
