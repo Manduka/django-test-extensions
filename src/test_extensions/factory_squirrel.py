@@ -22,8 +22,8 @@ class FactorySquirrel:
         self.created = {}
         self.granary = '\nsquirrel = FactorySquirrel()\n\n'
 
-    def bury(self, objects):  #  TODO  *objects
-        for o in flatten([objects]):  self.bury_one(o)
+    def bury(self, *objects):
+        for o in flatten(objects):  self.bury_one(o)
         return self.granary
 
     def bury_one(self, nut):
