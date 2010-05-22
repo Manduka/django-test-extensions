@@ -34,13 +34,11 @@ class FactorySquirrel:
         typage = self.fetch_object_type(nut)
         var_name = self.fetch_object_name(nut)
         self.created[var_name] = nut
-
         self._pre_create_necessary_nuts(nut)
-
         self.granary += var_name + ' = squirrel.dig_up(' + typage + ', None'
 
         for f in nut._meta.fields:
-            thang = getattr(nut, f.name)  #  TODO  useful defaults
+            thang = self._safely_get_attribute(f, nut)  #  TODO  useful defaults
           #  except:#  TODO  more accurate exception type & reporting
 
             if f.rel:
@@ -50,7 +48,6 @@ class FactorySquirrel:
             elif str(thang.__class__
                    ) in ('<type \'unicode\'>', '<type \'int\'>'):  # TODO now do the other kinds!
                 self.granary += '                , ' + f.name + '=%r\n' % thang
-
 
         self.granary += '                )\n'
 
@@ -64,11 +61,11 @@ class FactorySquirrel:
     def _pre_create_necessary_nuts(self, nut):
         for f in nut._meta.fields:
             if f.rel:
-                thang = getattr(nut, f.name)
+                thang = self._safely_get_attribute(f, nut)
+                if thang:  self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
 
-                if thang:
-                    self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
-
+    def _safely_get_attribute(self, f, nut):
+        return getattr(nut, f.name)
 
     def pre_create_if_needed(self, nut):  #  TODO  fun with system metaphors, and precreate_
         typage = self.fetch_object_type(nut)  #  TODO  merge!
