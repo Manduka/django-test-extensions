@@ -65,7 +65,11 @@ class FactorySquirrel:
                 if thang:  self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
 
     def _safely_get_attribute(self, f, nut):
-        return getattr(nut, f.name)
+        try:
+            return getattr(nut, f.name)
+        except :  # TODO  trap the type
+            print 'nope'
+            
 
     def pre_create_if_needed(self, nut):  #  TODO  fun with system metaphors, and precreate_
         typage = self.fetch_object_type(nut)  #  TODO  merge!
