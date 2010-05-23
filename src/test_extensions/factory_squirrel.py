@@ -18,12 +18,16 @@ class FactorySquirrel:
 
     #  TODO  mascot of squirrel with coffee & superman cape
 
-    def __init__(self):
-        self.created = {}
+    nuts = {}
 
-        self.granary = ( 'from test_extensions.factory_squirrel import FactorySquirrel\n' +
+    def __init__(self, to_database=True):
+        self.to_database = to_database
+        self.created = {}
+        self.nuts = {}
+
+        self.granary = ( # TODO 'from test_extensions.factory_squirrel import FactorySquirrel\n' +
                          '\n' +
-                         'squirrel = FactorySquirrel()\n' +
+                         'squirrel = FactorySquirrel(to_database=False)\n' +
                          '\n' )
 
     def bury(self, *objects):  #  TODO  bury -> store
@@ -33,29 +37,29 @@ class FactorySquirrel:
     def bury_one(self, nut):
         typage = self.fetch_object_type(nut)
         var_name = self.fetch_object_name(nut)
-        self.created[var_name] = nut
         self._pre_create_necessary_nuts(nut)
         self.granary += var_name + ' = squirrel.dig_up(' + typage + ', None'
 
         for f in nut._meta.fields:
             thang = self._safely_get_attribute(f, nut)  #  TODO  useful defaults
-          #  except:#  TODO  more accurate exception type & reporting
 
-            if f.rel:
-                if thang:
-                    name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
+            if f.rel and thang:
+                name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
+                if self.created.has_key(name):
                     self.granary += '                , ' + f.name + '=%s\n' % name
             elif str(thang.__class__
                    ) in ('<type \'unicode\'>', '<type \'int\'>'):  # TODO now do the other kinds!
                 self.granary += '                , ' + f.name + '=%r\n' % thang
 
         self.granary += '                )\n'
+        
+        self.created[var_name] = nut
 
         for ro in nut._meta.get_all_related_objects():
             yo_name = ro.field.name
             items = ro.model.objects.filter(**{yo_name: nut.pk}).all()
             self.bury(items)
-
+ 
 #  TODO put all in a fixture function
 
     def _pre_create_necessary_nuts(self, nut):
@@ -65,11 +69,13 @@ class FactorySquirrel:
                 if thang:  self.pre_create_if_needed(thang)  #  TODO  what if it's yourself??
 
     def _safely_get_attribute(self, f, nut):
+        # crash_type = ( (f.rel and f.related and f.related.model) and
+          #                  f.related.model.DoesNotExist or object )
         try:
             return getattr(nut, f.name)
-        except :  # TODO  trap the type
-            print 'nope'
-            
+        except:
+            import sys, traceback
+            traceback.print_exc(file=sys.stdout)
 
     def pre_create_if_needed(self, nut):  #  TODO  fun with system metaphors, and precreate_
         typage = self.fetch_object_type(nut)  #  TODO  merge!
@@ -115,9 +121,14 @@ class FactorySquirrel:
         typage.objects.filter(pk=attributes.get(pk_name,-1)).delete()
 
         #try:
-        nut = typage.objects.create(**attributes)  #  TODO  don't save to database
+
+        nut = typage(**attributes)  #  TODO  don't save to database
+        if self.to_database:  nut.save()
+
         #except:
          #   return None  #  TODO  better recorvery!
+        name = self.fetch_object_name(nut)
+        self.nuts[name] = nut
         return nut
 
         #  TODO  the assert_xml_tree system should replace its low
