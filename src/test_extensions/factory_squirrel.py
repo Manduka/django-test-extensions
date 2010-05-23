@@ -1,3 +1,5 @@
+from django.test import TestCase
+
 
 class FactorySquirrel:
     '''
@@ -23,7 +25,7 @@ class FactorySquirrel:
     def __init__(self, to_database=True):
         self.to_database = to_database
         self.created = {}
-        self.nuts = {}
+#        self.nuts = {}
 
         self.granary = ( # TODO 'from test_extensions.factory_squirrel import FactorySquirrel\n' +
                          '\n' +
@@ -113,7 +115,29 @@ class FactorySquirrel:
 
         return typage
 
- #  TODO fix the "grand loop" problem (or just chitter at user for it!)
+ #  CONSIDER  fix the "grand loop" problem (or just chitter at user for it!)
+
+    def load_granary_files(self, filename):  #  TODO rename to singular
+        #for file in
+   #     print self.find_fixture_files(filename)
+        # TODO  return da squoil, to chain it
+
+  #  def find_fixture_files(self, filename):
+        from django.db.models import get_apps
+        import os
+
+        for app in get_apps():
+            # path = getattr(app, '__path__', None) TODO  what's this?
+            path = os.path.dirname(app.__file__) + '/fixtures/%s_granary.py' % filename
+            if os.path.exists(path):
+                with open(path, 'w') as q:
+                    exec q in globals()  #  TODO  use the passed-in squirrel, not the internal one!
+
+    def test_fix_that_squirrels_nuts(self):
+        from django.db.models import get_apps
+        import os
+        filename = 'order'
+
 
     def dig_up(self, typage, workalike, **attributes):
         pk_name = typage._meta.pk.name
@@ -133,6 +157,23 @@ class FactorySquirrel:
 
         #  TODO  the assert_xml_tree system should replace its low
        #    level assert doc strings with a high-level one revealing intent
+
+    
+class FactorySquirrelTest(TestCase):
+    def _fixture_setup(self):
+        self._fs = FactorySquirrel()
+
+        for granary in getattr(self, 'squirrel', []):
+            self._fs.load_granary_files(granary)
+
+        return super(FactorySquirrelTest, self)._fixture_setup()
+
+    def _fixture_teardown(self):
+#        for nut in self._fs.nuts.values():
+            # TODO only if we created it nut.__class__.objects.filter(pk=nut.pk).delete()
+ #           del nut
+        self._fs.nuts = {}
+
 
 def flatten(x):  #  TODO  merge me into django-test-extensions/util
     '''Flattens list. Useful for permitting method arguments
