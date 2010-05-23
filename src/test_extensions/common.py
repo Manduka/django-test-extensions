@@ -128,7 +128,7 @@ class Common(TestCase):
         self.assertTrue(os.path.exists(file_path), "%s does not exist!" % file_path)
 
     def assert_has_attr(self, obj, attr):
-        "Assert a given object has a give attribute, without checking the values"
+        "Assert a given object has a give attribute, without checking the values"        
         try:
             getattr(obj, attr)
             assert(True)
@@ -136,6 +136,11 @@ class Common(TestCase):
             assert(False)
 
     def assert_stderr(self, lamb, expected=None):
+        '''
+        Pass methods that spew into this to squelch or optionally assert their output,
+        without getting it all over your console.
+        '''
+
         from StringIO import StringIO
         import sys
         waz = sys.stderr
