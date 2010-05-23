@@ -135,6 +135,21 @@ class Common(TestCase):
         except AttributeError:
             assert(False)
 
+    def assert_stderr(self, lamb, expected=None):
+        from StringIO import StringIO
+        import sys
+        waz = sys.stderr
+        sys.stderr = StringIO()
+
+        try:
+            lamb()
+            string = sys.stderr.getvalue()
+            if expected:  self.assert_regex_contains(string, expected)
+            return string
+        finally:
+            del sys.stderr
+            sys.stderr = waz
+
     def _xml_to_tree(self, xml, forgiving=False):
         from lxml import etree
         self._xml = xml

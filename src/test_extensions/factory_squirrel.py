@@ -75,7 +75,7 @@ class FactorySquirrel:
             return getattr(nut, f.name)
         except:
             import sys, traceback
-            traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stderr)
 
     def pre_create_if_needed(self, nut):  #  TODO  fun with system metaphors, and precreate_
         typage = self.fetch_object_type(nut)  #  TODO  merge!
