@@ -60,7 +60,7 @@ class FactorySquirrel:
             yo_name = ro.field.name
             items = ro.model.objects.filter(**{yo_name: nut.pk}).all()
             self.bury(items)
- 
+
 #  TODO put all in a fixture function
 
     def _pre_create_necessary_nuts(self, nut):
@@ -156,7 +156,7 @@ class FactorySquirrel:
         #  TODO  the assert_xml_tree system should replace its low
        #    level assert doc strings with a high-level one revealing intent
 
-    
+
 class FactorySquirrelTest(TestCase):
     def _fixture_setup(self):
         self._fs = FactorySquirrel()
@@ -167,9 +167,10 @@ class FactorySquirrelTest(TestCase):
         return super(FactorySquirrelTest, self)._fixture_setup()
 
     def _fixture_teardown(self):
-#        for nut in self._fs.nuts.values():
-            # TODO only if we created it nut.__class__.objects.filter(pk=nut.pk).delete()
- #           del nut
+        for nut in self._fs.nuts.values():
+            # TODO only if we created it
+            nut.__class__.objects.filter(pk=nut.pk).delete()
+            del nut
         self._fs.nuts = {}
 
 
