@@ -54,7 +54,6 @@ class FactorySquirrel:
                 self.granary += '                , ' + f.name + '=%r\n' % thang
 
         self.granary += '                )\n'
-        
         self.created[var_name] = nut
 
         for ro in nut._meta.get_all_related_objects():
@@ -161,6 +160,7 @@ class FactorySquirrel:
     
 class FactorySquirrelTest(TestCase):
     def _fixture_setup(self):
+        print 'setting up'
         self._fs = FactorySquirrel()
 
         for granary in getattr(self, 'squirrel', []):
