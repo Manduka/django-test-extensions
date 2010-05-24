@@ -127,7 +127,7 @@ class FactorySquirrel:
 
         for app in get_apps():
             # path = getattr(app, '__path__', None) TODO  what's this?
-            path = os.path.dirname(app.__file__) + '/fixtures/%s_granary.py' % filename
+            path = os.path.dirname(app.__file__) + '/fixtures/%s_nuts.py' % filename
             if os.path.exists(path):
                 with open(path, 'w') as q:
                     exec q in globals()  #  TODO  use the passed-in squirrel, not the internal one!
@@ -136,7 +136,6 @@ class FactorySquirrel:
         from django.db.models import get_apps
         import os
         filename = 'order'
-
 
     def dig_up(self, typage, workalike, **attributes):
         pk_name = typage._meta.pk.name
@@ -160,7 +159,6 @@ class FactorySquirrel:
     
 class FactorySquirrelTest(TestCase):
     def _fixture_setup(self):
-        print 'setting up'
         self._fs = FactorySquirrel()
 
         for granary in getattr(self, 'squirrel', []):
