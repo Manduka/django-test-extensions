@@ -27,7 +27,7 @@ class FactorySquirrel:
         self.created = {}
 #        self.nuts = {}
 
-        self.granary = ( # TODO 'from test_extensions.factory_squirrel import FactorySquirrel\n' +
+        self.granary = ( 'from test_extensions.factory_squirrel import FactorySquirrel\n' +
                          '\n' +
                          'squirrel = FactorySquirrel(to_database=False)\n' +
                          '\n' )
@@ -101,18 +101,6 @@ class FactorySquirrel:
     def fetch_object_name(self, nut):
         typage = self.fetch_object_type(nut)
         return '%s_%s' % (typage.lower(), str(nut.pk))
-
-    def fetch_object_name_too(self, nut):  #  TODO  use or lose
-        import re
-        path = re.search(r"'(.+)'", str(type(nut)))
-        path = path.group(1).split('.')
-        typage = path[-1]
-        importer = 'from %s import %s\n' % ('.'.join(path[:-1]), typage)
-
-        if importer not in self.granary:
-            self.granary = importer + self.granary
-
-        return typage
 
  #  CONSIDER  fix the "grand loop" problem (or just chitter at user for it!)
 
