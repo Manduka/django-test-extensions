@@ -45,6 +45,10 @@ class FactorySquirrel:
         for f in nut._meta.fields:
             thang = self._safely_get_attribute(f, nut)  #  TODO  useful defaults
 
+#            print f.name
+#            if f.name == 'product_ptr':
+ #               print getattr(thang, 'pk', 'nope'), f.rel
+
             if f.rel and thang:
                 name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
                 if self.created.has_key(name):
