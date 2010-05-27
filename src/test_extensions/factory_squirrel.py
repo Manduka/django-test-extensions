@@ -1,4 +1,5 @@
 from django.test import TestCase
+from pprint import pprint
 
 
 class FactorySquirrel:
@@ -45,11 +46,7 @@ class FactorySquirrel:
         for f in nut._meta.fields:
             thang = self._safely_get_attribute(f, nut)  #  TODO  useful defaults
 
-#            print f.name
-#            if f.name == 'product_ptr':
- #               print getattr(thang, 'pk', 'nope'), f.rel
-
-            if f.rel and thang:
+            if f.rel and thang and not f.rel.parent_link:
                 name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
                 if self.created.has_key(name):
                     self.granary += '                , ' + f.name + '=%s\n' % name
@@ -66,6 +63,15 @@ class FactorySquirrel:
             self.bury(items)
 
 #  TODO put all in a fixture function
+
+#            if f.rel.parent_link:
+#                pprint(nut.__dict__)
+#                print f.name
+#                pprint(f.related.__dict__)
+#                #pprint(dir(f.related))
+#             #   print getattr(thang, 'pk', 'nope'), f.rel
+#
+#            else:
 
     def _pre_create_necessary_nuts(self, nut):
         for f in nut._meta.fields:
