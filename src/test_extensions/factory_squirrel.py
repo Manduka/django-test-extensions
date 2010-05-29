@@ -138,13 +138,11 @@ class FactorySquirrel:
 
     def dig_up(self, typage, workalike, **attributes):
         pk_name = typage._meta.pk.name
-            # TODO  scrape not FullHistory
-        typage.objects.filter(pk=attributes.get(pk_name,-1)).delete()
-
-        #try:
-
         nut = typage(**attributes)  #  TODO  don't save to database
-        if self.to_database:  nut.save()
+
+        if self.to_database:
+            typage.objects.filter(pk=attributes.get(pk_name,-1)).delete()
+            nut.save()
 
         #except:
          #   return None  #  TODO  better recorvery!
@@ -157,21 +155,26 @@ class FactorySquirrel:
 
 
 class FactorySquirrelTest(TestCase):
+
     def _fixture_setup(self):
-        print 'setting up'
         self._fs = FactorySquirrel()
 
         for granary in getattr(self, 'squirrel', []):
             self._fs.load_granary_files(granary)
 
-        return super(FactorySquirrelTest, self)._fixture_setup()
+        # TODO  now pickle them and use the pickle
+        #return super(FactorySquirrelTest, self)._fixture_setup()
 
     def _fixture_teardown(self):
-        for nut in self._fs.nuts.values():
+        #dunn = super(FactorySquirrelTest, self)._fixture_teardown()
+
+        #for nut in self._fs.nuts.values():
             # TODO only if we created it
-            nut.__class__.objects.filter(pk=nut.pk).delete()
-            del nut
+            #nut.__class__.objects.filter(pk=nut.pk).delete()
+            #del nut
+            
         self._fs.nuts = {}
+       # return dunn
 
 
 def flatten(x):  #  TODO  merge me into django-test-extensions/util
