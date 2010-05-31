@@ -41,7 +41,7 @@ class FactorySquirrel:
         typage = self.fetch_object_type(nut)
         var_name = self.fetch_object_name(nut)
         self._pre_create_necessary_nuts(nut)
-        self.granary += var_name + ' = squirrel.dig_up(' + typage + ', None'
+        self.granary += 'suite.' + var_name + ' = squirrel.dig_up(' + typage + ', None'
 
         for f in nut._meta.fields:
             thang = self._safely_get_attribute(f, nut)  #  TODO  useful defaults
@@ -49,7 +49,7 @@ class FactorySquirrel:
             if f.rel and thang and not f.rel.parent_link:
                 name = self.fetch_object_name(thang)  #  TODO  what if it's yourself??
                 if self.created.has_key(name):
-                    self.granary += '                , ' + f.name + '=%s\n' % name
+                    self.granary += '                , ' + f.name + '=suite.%s\n' % name
             elif str(thang.__class__
                    ) in ('<type \'unicode\'>', '<type \'int\'>'):  # TODO now do the other kinds!
                 self.granary += '                , ' + f.name + '=%r\n' % thang
@@ -114,12 +114,7 @@ class FactorySquirrel:
 
  #  CONSIDER  fix the "grand loop" problem (or just chitter at user for it!)
 
-    def load_granary_files(self, filename):  #  TODO rename to singular
-        #for file in
-   #     print self.find_fixture_files(filename)
-        # TODO  return da squoil, to chain it
-
-  #  def find_fixture_files(self, filename):
+    def load_granary_file(self, suite, filename):  #  TODO rename to singular
         from django.db.models import get_apps
         import os
 
@@ -129,7 +124,8 @@ class FactorySquirrel:
 
             if os.path.exists(path):
                 with open(path, 'r') as q:
-                    exec q in globals()  #  TODO  use the passed-in squirrel, not the internal one!
+
+                    exec q in locals()  #  TODO  use the passed-in squirrel, not the internal one!
 
     def _test_fix_that_squirrels_nuts(self):  #  TODO remove this it does not belong here
         from django.db.models import get_apps
@@ -154,29 +150,31 @@ class FactorySquirrel:
        #    level assert doc strings with a high-level one revealing intent
 
 
-class FactorySquirrelTest(TestCase):
+class FactorySquirrelSuite(TestCase):
 
     def _fixture_setup(self):
         self._fs = FactorySquirrel()
 
         for granary in getattr(self, 'squirrel', []):
-            self._fs.load_granary_files(granary)
+            self._fs.load_granary_file(self, granary)
 
         # TODO  now pickle them and use the pickle
-        #return super(FactorySquirrelTest, self)._fixture_setup()
+        return super(FactorySquirrelSuite, self)._fixture_setup()
 
-    def _fixture_teardown(self):
-        #dunn = super(FactorySquirrelTest, self)._fixture_teardown()
+    '''def _fixture_teardown(self):
+        print '_fixture_teardown'
+        dunn = super(FactorySquirrelTest, self)._fixture_teardown()
 
-        #for nut in self._fs.nuts.values():
+        for nut in self._fs.nuts.values():
             # TODO only if we created it
             #nut.__class__.objects.filter(pk=nut.pk).delete()
-            #del nut
+            del nut
             
         self._fs.nuts = {}
-       # return dunn
+        return dunn'''
 
-
+# TODO  rename to_database to use_database
+    
 def flatten(x):  #  TODO  merge me into django-test-extensions/util
     '''Flattens list. Useful for permitting method arguments
        that take either a scalar or a list'''
