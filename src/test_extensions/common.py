@@ -128,7 +128,7 @@ class Common(TestCase):
         self.assertTrue(os.path.exists(file_path), "%s does not exist!" % file_path)
 
     def assert_has_attr(self, obj, attr):
-        "Assert a given object has a give attribute, without checking the values"        
+        "Assert a given object has a give attribute, without checking the values"
         try:
             getattr(obj, attr)
             assert(True)
@@ -187,13 +187,15 @@ class Common(TestCase):
         from lxml.builder import ElementMaker # TODO document we do lxml only !
         doc = block(ElementMaker())   #  TODO  or just pass in an element maker
         path = self._convert_nodes_to_nested_path(doc)
-        self.assert_xml(sample, path, **kw)  #  this checks nesting
+        result = self.assert_xml(sample, path, **kw)  #  this checks nesting
           #  CONSIDER  now detect which parts failed!!!
         doc_order = -1
 
         for node in doc.xpath('//*'):
             doc_order = self._assert_xml_node(doc_order, kw, node, sample)
               # TODO  amalgamate all errors - don't just kack on the first one!
+
+        return result
 
     def _assert_xml_node(self, doc_order, kw, node, sample):
         nodes = [self._node_to_predicate(a) for a in node.xpath('ancestor-or-self::*')]
