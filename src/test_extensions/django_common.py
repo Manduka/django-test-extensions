@@ -199,3 +199,20 @@ class DjangoCommon(Common):
 
         self.assertEqual(too, mod.__dict__[item], should)
         return mod
+
+    def assert_form_fields(self, form, context, *fields):
+        '''
+        ERGO This assertion may someday fix the problem that Django templates (correctly)
+        don't complain if fields don't exist, but this obscures, at test time,
+        if a template is NOT displaying a field that SHOULD exist...
+        '''
+        moar = {}
+
+        for name in fields:
+            in_form = form.fields[name]  # if this blows, that's a failed assertion the form missed that field!
+            element = self.assert_xml(context, 'descendant::input[ @name = "%s" ]' % name)
+            moar[name] = (in_form, element)
+
+        return moar  #  TODO  use this moar!
+
+        

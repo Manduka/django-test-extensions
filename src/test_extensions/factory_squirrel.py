@@ -132,12 +132,15 @@ class FactorySquirrel:
         import os
         filename = 'order'
 
+        # TODO  work with content types
+
     def dig_up(self, typage, workalike, **attributes):
-        pk_name = typage._meta.pk.name
         nut = typage(**attributes)  #  TODO  don't save to database
 
         if self.to_database:
-            typage.objects.filter(pk=attributes.get(pk_name,-1)).delete()
+            pk_name = typage._meta.pk.name
+            pk = attributes.get(pk_name, -1)
+            typage.objects.filter(pk=pk).delete()
             nut.save()
 
         #except:
