@@ -177,7 +177,12 @@ class Common(TestCase):
             return self.assert_xml_tree(xml, xpath, **kw)
 
         tree = self._xml_to_tree(xml, forgiving=kw.get('forgiving', False))
-        nodes = tree.xpath(xpath)
+        deep_map = {}
+
+        for q in tree.xpath('//*'):  #  ERGO only rip nodes which _have_ more namespacies
+            deep_map.update(q.nsmap)
+
+        nodes = tree.xpath(xpath, namespaces=deep_map)
         self.assertTrue(len(nodes) > 0, xpath + ' should match ' + self._xml)
         node = nodes[0]
         if kw.get('verbose', False):  self.reveal_xml(node)  #  "Where have ye been? What have ye seen?"--Morgoth
@@ -263,4 +268,3 @@ class Common(TestCase):
         code += ')'
         return code
 
-        
