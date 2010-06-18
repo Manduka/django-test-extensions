@@ -179,8 +179,8 @@ class Common(TestCase):
         tree = self._xml_to_tree(xml, forgiving=kw.get('forgiving', False))
         deep_map = {}
 
-        for q in tree.xpath('//*'):  #  ERGO only rip nodes which _have_ more namespacies
-            deep_map.update(q.nsmap)
+        for q in tree.getroottree().xpath('//*'):  #  ERGO only rip nodes which _have_ more namespacies
+            deep_map.update(q.nsmap)  #  ERGO and note this gleefully wrecks nesting... See http://c2.com/cgi/wiki?XmlSucks
 
         nodes = tree.xpath(xpath, namespaces=deep_map)
         self.assertTrue(len(nodes) > 0, xpath + ' should match ' + self._xml)
