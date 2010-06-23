@@ -157,18 +157,26 @@ class Common(TestCase):
 
     def _xml_to_tree(self, xml, forgiving=False):
         from lxml import etree
+        from lxml.etree import XMLSyntaxError
         self._xml = xml
 
         if not isinstance(xml, basestring):
             self._xml = str(xml)  #  TODO  tostring
             return xml
 
-        if '<html' in xml[:200]:
-            parser = etree.HTMLParser(recover=forgiving)
-            return etree.HTML(str(xml), parser)
-        else:
-            parser = etree.XMLParser(recover=forgiving)
-            return etree.XML(str(xml))
+        try:
+            if '<html' in xml[:200]:
+                parser = etree.HTMLParser(recover=forgiving)
+                return etree.HTML(str(xml), parser)
+            else:
+                parser = etree.XMLParser(recover=forgiving)
+                return etree.XML(str(xml))
+
+        except XMLSyntaxError, e:
+            yo = re.search(r'line (\d+)', str(e.message))
+            line = int(yo.groups()[0])
+            culprit = xml.split('\n')[line - 2: line + 2]
+            self.assert_(False, '\n'.join([e.message] + culprit))
 
     def assert_xml(self, xml, xpath, **kw):
         'Check that a given extent of XML or HTML contains a given XPath, and return its first node'
