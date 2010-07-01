@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import re
 
@@ -56,6 +57,12 @@ class Common(TestCase):
 
     def assert_not_equal(self, *args, **kwargs):
         "Assert that two values are not equal"
+        
+        return not self.assertNotEqual(*args, **kwargs)  #  TODO  reflect me into the report!
+
+    def deny_equal(self, *args, **kwargs):
+        "Deny that two values are equal; otherwise, reflect them"
+        
         return not self.assertNotEqual(*args, **kwargs)  #  TODO  reflect me into the report!
 
     def assert_contains(self, needle, haystack, diagnostic=''):
