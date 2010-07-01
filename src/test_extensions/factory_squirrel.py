@@ -159,7 +159,7 @@ class FactorySquirrelSuite(TestCase):
         self._fs = FactorySquirrel()
 
         for granary in getattr(self, 'squirrel', []):
-            self._fs.load_granary_file(self, granary)
+            self._fs.load_granary_file(self, granary)  #  TODO  error message if they ain't there!
 
         # TODO  now pickle them and use the pickle
         return super(FactorySquirrelSuite, self)._fixture_setup()
@@ -172,12 +172,12 @@ class FactorySquirrelSuite(TestCase):
             # TODO only if we created it
             #nut.__class__.objects.filter(pk=nut.pk).delete()
             del nut
-            
+
         self._fs.nuts = {}
         return dunn'''
 
 # TODO  rename to_database to use_database
-    
+
 def flatten(x):  #  TODO  merge me into django-test-extensions/util
     '''Flattens list. Useful for permitting method arguments
        that take either a scalar or a list'''
