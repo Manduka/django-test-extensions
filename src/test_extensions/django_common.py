@@ -149,7 +149,22 @@ class DjangoCommon(Common):
         self.assertFalse(True, 'The called block, `' + source +
                                '` should produce new ' + model_name + ' records')
 
-#  TODO  deny_latest!
+    def deny_latest(self, query_set, lamb):
+        pks = list(query_set.values_list('pk', flat=True).order_by('-pk'))
+        high_water_mark = (pks+[0])[0]
+        lamb()
+
+          # NOTE we ass-ume the database generates primary keys in monotonic order.
+          #         Don't use these techniques in production,
+          #          or in the presence of a pro DBA
+
+        if query_set.filter(pk__gt=high_water_mark).order_by('pk').count():
+            source = open(lamb.func_code.co_filename, 'r').readlines()[lamb.func_code.co_firstlineno - 1]
+            source = source.replace('lambda:', '').strip()
+            model_name = str(query_set.model)
+
+            self.assertFalse(True, 'The called block, `' + source +
+                                   '` should not produce new ' + model_name + ' records')
 
     def deny_mail(self, funk):
         '''checks that the called block keeps its opinions to itself'''
@@ -215,4 +230,3 @@ class DjangoCommon(Common):
 
         return moar  #  TODO  use this moar!
 
-        
