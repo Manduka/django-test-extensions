@@ -222,7 +222,7 @@ class Common(TestCase):
         path = '//' + '/descendant::'.join(nodes)
         node = self.assert_xml(sample, path, **kw)
         location = len(node.xpath('preceding::*'))
-        self.assertTrue(doc_order <= location, 'Node out of order! ' + path)
+        self.assertTrue(doc_order <= location, 'Nodes should appear in order ' + path)
         return location
 
     def _convert_nodes_to_nested_path(self, node):

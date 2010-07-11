@@ -197,6 +197,15 @@ class DjangoCommon(Common):
 
         return mod  #  TODO  squeak if there's no options, or if the before-afters don't come in pairs
 
+    def deny_model_changes(self, mod, lamb):
+        options = {}
+
+        for f in mod._meta.fields:
+            v = getattr(mod, f.name)
+            options[f.name] = (v, v)
+
+        return self.assert_model_changes(mod, lamb, **options)
+
     def assert_model_changes_old(self, mod, item, frum, too, lamb):
         source = open(lamb.func_code.co_filename, 'r').readlines()[lamb.func_code.co_firstlineno - 1]
         source = source.replace('lambda:', '').strip()
