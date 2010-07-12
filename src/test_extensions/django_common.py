@@ -201,8 +201,9 @@ class DjangoCommon(Common):
         options = {}
 
         for f in mod._meta.fields:
-            v = getattr(mod, f.name)
-            options[f.name] = (v, v)
+            if 'date' not in f.name:  #  ERGO  gawd what a hack please do a real fix!
+                v = getattr(mod, f.name)
+                options[f.name] = (v, v)
 
         return self.assert_model_changes(mod, lamb, **options)
 
