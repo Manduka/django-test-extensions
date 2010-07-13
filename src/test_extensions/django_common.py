@@ -184,7 +184,7 @@ class DjangoCommon(Common):
             should = '%s.%s should equal `%s` before your activation line, `%s`' % \
                       (model, item, before, source)  #  TODO  rename frum too to before after
 
-            self.assertEqual(before, getattr(mod, item, not before), should)
+            self.assertEqual(_maybe_simplify(before), _maybe_simplify(getattr(mod, item, not before)), should)
 
         lamb()
         mod = mod.__class__.objects.get(pk=mod.pk)
@@ -193,7 +193,7 @@ class DjangoCommon(Common):
             should = '%s.%s should equal `%s` after your activation line, `%s`' % \
                       (model, item, after, source)
 
-            self.assertEqual(after, getattr(mod, item, not after), should)  #  TODO  allow a single item, not a before-after pair, to indicate a field should NOT change
+            self.assertEqual(_maybe_simplify(after), _maybe_simplify(getattr(mod, item, not after)), should)  #  TODO  allow a single item, not a before-after pair, to indicate a field should NOT change
 
         return mod  #  TODO  squeak if there's no options, or if the before-afters don't come in pairs
 
@@ -201,29 +201,10 @@ class DjangoCommon(Common):
         options = {}
 
         for f in mod._meta.fields:
-            if 'date' not in f.name:  #  ERGO  gawd what a hack please do a real fix!
-                v = getattr(mod, f.name)
-                options[f.name] = (v, v)
+            v = getattr(mod, f.name)
+            options[f.name] = (v, v)
 
         return self.assert_model_changes(mod, lamb, **options)
-
-    def assert_model_changes_old(self, mod, item, frum, too, lamb):
-        source = open(lamb.func_code.co_filename, 'r').readlines()[lamb.func_code.co_firstlineno - 1]
-        source = source.replace('lambda:', '').strip()
-        model  = str(mod.__class__).replace("'>", '').split('.')[-1]
-
-        should = '%s.%s should equal `%s` before your activation line, `%s`' % \
-                  (model, item, frum, source)
-
-        self.assertEqual(frum, mod.__dict__[item], should)
-        lamb()
-        mod = mod.__class__.objects.get(pk=mod.pk)
-
-        should = '%s.%s should equal `%s` after your activation line, `%s`' % \
-                  (model, item, too, source)
-
-        self.assertEqual(too, mod.__dict__[item], should)
-        return mod
 
     def assert_form_fields(self, form, context, *fields):
         '''
@@ -240,3 +221,10 @@ class DjangoCommon(Common):
 
         return moar  #  TODO  use this moar!
 
+def _maybe_simplify(maybe_time):  #  ERGO  also fix comparisons on floats!
+    import datetime
+
+    if isinstance(maybe_time, datetime.datetime):
+        maybe_time = datetime.datetime(maybe_time.year, maybe_time.month, maybe_time.day, maybe_time.hour, maybe_time.minute)
+
+    return maybe_time  #  Time sucks. The Earth, Moon, and Sun should orbit via the Metric System!
