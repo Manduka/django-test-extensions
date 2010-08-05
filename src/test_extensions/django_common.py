@@ -131,6 +131,8 @@ class DjangoCommon(Common):
         unlike assert_mail, this always only returns one mail, or dies trying.
 
         The winning mail must have 'tag' in either its subject or body
+
+        TODO  deny_mail_containing
         '''
 
         mails = self._assert_mail(lamb)
