@@ -57,12 +57,12 @@ class Common(TestCase):
 
     def assert_not_equal(self, *args, **kwargs):
         "Assert that two values are not equal"
-        
+
         return not self.assertNotEqual(*args, **kwargs)  #  TODO  reflect me into the report!
 
     def deny_equal(self, *args, **kwargs):
         "Deny that two values are equal; otherwise, reflect them"
-        
+
         return not self.assertNotEqual(*args, **kwargs)  #  TODO  reflect me into the report!
 
     def assert_contains(self, needle, haystack, diagnostic=''):
@@ -198,7 +198,9 @@ class Common(TestCase):
             deep_map.update(q.nsmap)  #  ERGO and note this gleefully wrecks nesting... See http://c2.com/cgi/wiki?XmlSucks
 
         nodes = tree.xpath(xpath, namespaces=deep_map)
-        self.assertTrue(len(nodes) > 0, xpath + ' should match ' + self._xml)
+
+        match = getattr(self._xml, 'capitalize', False) and self._xml or self.reveal_xml(self._xml)
+        self.assertTrue(len(nodes) > 0, xpath + ' should match ' + match)
         node = nodes[0]
         if kw.get('verbose', False):  self.reveal_xml(node)  #  "Where have ye been? What have ye seen?"--Morgoth
         return node
@@ -247,7 +249,7 @@ class Common(TestCase):
         'Spews an XML node as source, for diagnosis'
 
         from lxml import etree
-        print etree.tostring(node, pretty_print=True)  #  CONSIDER  does pretty_print work? why not?
+        return etree.tostring(node, pretty_print=True)  #  CONSIDER  does pretty_print work? why not?
 
     def deny_xml(self, xml, xpath):
         'Check that a given extent of XML or HTML does not contain a given XPath'

@@ -1,6 +1,7 @@
 # Test classes inherit from the Django TestCase
 from common import Common
 import re
+from django.core import mail
 
 # needed to login to the admin
 from django.contrib.auth.models import User
@@ -121,12 +122,33 @@ class DjangoCommon(Common):
         returns either a single mail object or a list of more than one
         '''
 
-        from django.core import mail
+        mails = self._assert_mail(funk)
+        if len(mails) == 1:  return mails[0]
+        return mails
+
+    def assert_mail_containing( self, tag, lamb ):
+        '''
+        unlike assert_mail, this always only returns one mail, or dies trying.
+
+        The winning mail must have 'tag' in either its subject or body
+        '''
+
+        mails = self._assert_mail(lamb)
+
+        for mail in mails:
+            if tag in mail.subject + '\n' + mail.body:
+                return mail
+
+        mails = '\n----\n'.join([mail.subject + '\n' + mail.body for mail in mails])
+        self.assertTrue(False, 'tag %s not found in mails: ' + mails)
+
+    def _assert_mail(self, funk):
+        'this slightly less judgemental version of assert_mail always returns an array'
+
         previous_mails = len(mail.outbox)
         funk()
-        mails = mail.outbox[ previous_mails : ]
+        mails = mail.outbox[previous_mails:]
         assert [] != mails, 'the called block produced no mails'
-        if len(mails) == 1:  return mails[0]
         return mails
 
     def assert_latest(self, query_set, lamb):
