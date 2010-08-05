@@ -136,7 +136,7 @@ class DjangoCommon(Common):
         mails = self._assert_mail(lamb)
 
         for mail in mails:
-            if tag in mail.subject + '\n' + mail.body:
+            if tag in mail.subject or tag in mail.body:
                 return mail
 
         mails = '\n----\n'.join([mail.subject + '\n' + mail.body for mail in mails])
