@@ -140,7 +140,7 @@ class DjangoCommon(Common):
                 return mail
 
         mails = '\n----\n'.join([mail.subject + '\n' + mail.body for mail in mails])
-        self.assertTrue(False, 'tag %s not found in mails: ' + mails)
+        self.assertTrue(False, 'tag %s not found in mails: %s' % (tag, mails))
 
     def _assert_mail(self, funk):
         'this slightly less judgemental version of assert_mail always returns an array'
