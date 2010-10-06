@@ -113,8 +113,9 @@ class Command(BaseCommand):
                     
         test_options = dict(verbosity=verbosity,
             interactive=interactive)
-            
-        test_options["failfast"] = failfast
+        
+        if failfast:
+            test_options["failfast"] = failfast
 
         if options.get('coverage'):
             test_options["callgraph"] = callgraph
