@@ -13,8 +13,8 @@ from BeautifulSoup import BeautifulSoup as Soup
 
 # needed to login to the admin
 from django.contrib.auth.models import User
-
 from django.utils.encoding import smart_str
+
 
 class Common(TestCase):
     """
@@ -69,7 +69,7 @@ class Common(TestCase):
         'Assert that one value (the hasystack) contains another value (the needle)'
         diagnostic = diagnostic + "\nContent should contain `%s' but doesn't:\n%s" % (needle, haystack)
         diagnostic = diagnostic.strip()
-        return self.assert_(needle in haystack, diagnostic)  #  TODO  reflect me into the report!
+        return self.assert_(needle in haystack, diagnostic)
 
     def assert_doesnt_contain(self, needle, haystack):  #  CONSIDER  deprecate me for deny_contains
         "Assert that one value (the hasystack) does not contain another value (the needle)"
@@ -81,7 +81,6 @@ class Common(TestCase):
 
     def assert_regex_contains(self, pattern, string, flags=None):
         'Assert that the given regular expression matches the string'
-
         flags = flags or 0
         disposition = re.search(pattern, string, flags)
         self.assertTrue(disposition != None, repr(smart_str(pattern)) + ' should match ' + repr(smart_str(string)))
@@ -202,7 +201,8 @@ class Common(TestCase):
         match = getattr(self._xml, 'capitalize', False) and self._xml or self.reveal_xml(self._xml)
         self.assertTrue(len(nodes) > 0, xpath + ' should match ' + match)
         node = nodes[0]
-        if kw.get('verbose', False):  self.reveal_xml(node)  #  "Where have ye been? What have ye seen?"--Morgoth
+        if kw.get('verbose', False):
+            self.reveal_xml(node)
         return node
 
     def assert_xml_tree(self, sample, block, **kw):  #  TODO  less sucktacular name!
@@ -247,13 +247,11 @@ class Common(TestCase):
 
     def reveal_xml(self, node):
         'Spews an XML node as source, for diagnosis'
-
         from lxml import etree
         return etree.tostring(node, pretty_print=True)  #  CONSIDER  does pretty_print work? why not?
 
     def deny_xml(self, xml, xpath):
         'Check that a given extent of XML or HTML does not contain a given XPath'
-
         tree = self._xml_to_tree(xml)
         nodes = tree.xpath(xpath)
         self.assertEqual(0, len(nodes), xpath + ' should not appear in ' + self._xml)
@@ -284,4 +282,5 @@ class Common(TestCase):
 
         code += ')'
         return code
+
 
